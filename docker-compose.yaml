@@ -1,0 +1,94 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  # 1. Your Node.js Backend Service
+  backend:
+    container_name: nexus_backend
+    # Assumes a Dockerfile is in the same directory
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Mounts your local source code into the container for live-reloading
+    volumes:
+      - ./src:/app/src
+    ports:
+      # Expose your API port (e.g., 3000)
+      - '3000:3000'
+    # Environment variables your app will need to connect to other services
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGO_URI=mongodb://root:example@mongo:27017/nexus_db?authSource=admin
+      - ELASTIC_URL=http://elasticsearch:9200
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    # Control startup order
+    depends_on:
+      - mongo
+      - elasticsearch
+      - redis
+    networks:
+      - nexus_network
+
+  # 2. MongoDB Database
+  mongo:
+    image: mongo:6.0
+    container_name: nexus_mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      # Persists database data across container restarts
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    networks:
+      - nexus_network
+
+  # 3. Elasticsearch Search Engine
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: nexus_elastic
+    ports:
+      - '9200:9200'
+    volumes:
+      # Persists index data
+      - es_data:/usr/share/elasticsearch/data
+    environment:
+      # Required for single-node development cluster
+      - discovery.type=single-node
+      # Disable security for easy local dev (DO NOT DO THIS IN PRODUCTION)
+      - xpack.security.enabled=false
+      # Limit memory usage to prevent it from consuming all host resources
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - nexus_network
+
+  # 4. Redis Caching Layer
+  redis:
+    image: redis:7-alpine
+    container_name: nexus_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      # Persists cache data if needed
+      - redis_data:/data
+    networks:
+      - nexus_network
+
+# Define the network for all services to communicate on
+networks:
+  nexus_network:
+    driver: bridge
+
+# Define the volumes for data persistence
+volumes:
+  mongo_data:
+  es_data:
+  redis_data:
