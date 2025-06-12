@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { CoreController } from './core.controller';
-import { HelloService } from './core.service';
+import { HealthService } from './core.service';
 import { MongoModule } from 'src/shared/modules/mongo/mongo.module';
+import { CreateSchemaUsecase } from './application/create-schema.usecase';
+import { SchemaController } from './schema.controller';
 
 @Module({
   imports: [
@@ -10,7 +12,7 @@ import { MongoModule } from 'src/shared/modules/mongo/mongo.module';
       connectionName: 'default',
     }),
   ],
-  controllers: [CoreController],
-  providers: [HelloService],
+  controllers: [CoreController, SchemaController],
+  providers: [HealthService, CreateSchemaUsecase],
 })
 export class CoreModule {}

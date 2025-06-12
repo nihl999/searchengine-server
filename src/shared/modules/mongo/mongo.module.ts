@@ -2,8 +2,8 @@ import { DynamicModule, Module, Provider } from '@nestjs/common';
 import * as mongo from 'mongodb';
 import {
   mountClientToken,
-  mountDbToken,
   mountCollectionProviderToken,
+  mountDbToken,
 } from './helpers/mountToken';
 
 export type RootMongoModuleOptions = {
@@ -24,14 +24,15 @@ still needing the connection name
 @Module({})
 export class MongoModule {
   static forRoot(options: RootMongoModuleOptions): DynamicModule {
+    const { uri, connectionName, database, ...clientOpts } = options;
     const providers: Provider[] = [
       {
-        provide: mountClientToken(options.connectionName),
+        provide: mountClientToken(connectionName),
         async useFactory() {
           const client = new mongo.MongoClient(
-            options.uri ?? 'mongodb://localhost:27017',
+            uri ?? 'mongodb://localhost:27017',
             {
-              ...options,
+              ...clientOpts,
             },
           );
           await client.connect();
@@ -39,17 +40,18 @@ export class MongoModule {
         },
       },
       {
-        provide: mountDbToken(options.connectionName),
+        provide: mountDbToken(connectionName),
         useFactory(client: mongo.MongoClient) {
-          return client.db(options.database ?? 'test');
+          return client.db(database ?? 'test');
         },
-        inject: ['MONGO_CLIENT'],
+        inject: [mountClientToken(connectionName)],
       },
     ];
     return {
       module: MongoModule,
       providers: providers,
       exports: providers,
+      global: true,
     };
   }
   static forFeature(options: FeatureMongoModuleOptions): DynamicModule {

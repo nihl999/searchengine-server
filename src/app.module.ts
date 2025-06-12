@@ -6,7 +6,7 @@ import { MongoModule } from './shared/modules/mongo/mongo.module';
   imports: [
     MongoModule.forRoot({
       connectionName: 'default',
-      uri: 'mongodb://localhost:27017',
+      uri: 'mongodb://root:example@localhost:27017/nexus_db?authSource=admin',
       database: 'default',
     }),
     CoreModule,
