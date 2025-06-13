@@ -9,6 +9,7 @@ import {
   CreateSchemaUsecaseOutput,
 } from './create-schema.dto';
 import { DBInsertError } from '../../domain/exceptions/DBInsert.exception';
+import { AuthSession } from 'src/shared/modules/auth/session.mock';
 
 @Injectable()
 export class CreateSchemaUsecase extends Usecase<
@@ -21,9 +22,13 @@ export class CreateSchemaUsecase extends Usecase<
   ) {
     super(CreateSchemaUsecase.name);
   }
-  protected async onExecute(props: CreateSchemaUsecaseInput) {
+  protected async onExecute(
+    props: CreateSchemaUsecaseInput,
+    session: AuthSession,
+  ) {
     const insertOneResult = await fromPromise(
       this.schemaCollection.insertOne({
+        org_id: session.user.id,
         schemaName: props.name,
         fields: props.fields,
       }),

@@ -1,6 +1,6 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { config } from 'env.config';
 import { AppModule } from './app.module';
 import { ResultInterceptor } from './shared/modules/ddd/infra/interceptors/response-handler.interceptor';

@@ -6,6 +6,7 @@ import { err, ok } from 'true-myth/result';
 import { fromPromise } from 'true-myth/task';
 import { DBNotFoundError } from '../../domain/exceptions/DBNotFound.exception';
 import { GetAllSchemasOutput } from './get-all-schema.dto';
+import { AuthSession } from 'src/shared/modules/auth/session.mock';
 
 @Injectable()
 export class GetAllSchemasQuery extends Usecase<
@@ -18,9 +19,12 @@ export class GetAllSchemasQuery extends Usecase<
   ) {
     super(GetAllSchemasQuery.name);
   }
-  protected async onExecute() {
+  protected async onExecute(_: void, session: AuthSession) {
     const insertOneResult = await fromPromise(
-      this.schemaCollection.find().limit(10).toArray(),
+      this.schemaCollection
+        .find({ org_id: session.user.id })
+        .limit(10)
+        .toArray(),
     );
     if (insertOneResult.isErr) {
       return err(

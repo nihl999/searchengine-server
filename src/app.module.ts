@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { SchemaModule } from './modules/schema/schema.module';
 import { MongoModule } from './shared/modules/mongo/mongo.module';
 import { HealthModule } from './shared/modules/health/health.module';
+import { MockAuthMiddleware } from './shared/modules/auth/session.mock';
 
 @Module({
   imports: [
@@ -14,4 +15,8 @@ import { HealthModule } from './shared/modules/health/health.module';
     HealthModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(MockAuthMiddleware).forRoutes('*');
+  }
+}

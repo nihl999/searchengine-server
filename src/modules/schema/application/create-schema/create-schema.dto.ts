@@ -7,7 +7,6 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { randomUUID } from 'crypto';
 
 enum FieldDTOType {
   TEXT = 'text',
@@ -24,18 +23,34 @@ enum FieldDTOSearchability {
 }
 
 export class FieldDTO {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
   @IsEnum(FieldDTOType)
   type: FieldDTOType;
   @IsEnum(FieldDTOSearchability)
   searchability: FieldDTOSearchability;
 }
 
+const BookDetailsFieldsExample: FieldDTO[] = [
+  {
+    name: 'Title',
+    type: FieldDTOType.TEXT,
+    searchability: FieldDTOSearchability.KEYWORD,
+  },
+  {
+    name: 'Description',
+    type: FieldDTOType.TEXT,
+    searchability: FieldDTOSearchability.TEXT,
+  },
+];
 export class CreateSchemaUsecaseInput {
-  @ApiProperty({ example: randomUUID(), format: 'uuid' })
+  @ApiProperty({ example: 'Book details' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @ApiProperty({ example: BookDetailsFieldsExample })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => FieldDTO)
