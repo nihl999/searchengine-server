@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { Result } from 'true-myth';
 import { BaseException } from '../domain/exception';
 
-type ResultAsync<A, B> = Promise<Result<A, B>>;
+export type ResultAsync<A, B> = Promise<Result<A, B>>;
 
 export abstract class Usecase<Input, Output, Error extends BaseException> {
   protected logger: Logger;

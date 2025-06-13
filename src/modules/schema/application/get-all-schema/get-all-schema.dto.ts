@@ -42,6 +42,6 @@ export class CreateSchemaUsecaseInput {
   fields: FieldDTO[];
 }
 
-export class CreateSchemaUsecaseOutput {
-  id: string;
+export class GetAllSchemasOutput {
+  ids: string[];
 }

@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
 import { Usecase } from 'src/shared/modules/ddd/application/usecase';
 import { DbCollection } from 'src/shared/modules/mongo/decorators/inject-collection.decorator';
-import { DBInsertError } from '../domain/exceptions/DBInsertError.exception';
+import { err, ok } from 'true-myth/result';
+import { fromPromise } from 'true-myth/task';
 import {
   CreateSchemaUsecaseInput,
   CreateSchemaUsecaseOutput,
 } from './create-schema.dto';
-import { tryOrElse } from 'true-myth/task';
-import { ok, err } from 'true-myth/result';
+import { DBInsertError } from '../../domain/exceptions/DBInsert.exception';
 
 @Injectable()
 export class CreateSchemaUsecase extends Usecase<
@@ -22,21 +22,19 @@ export class CreateSchemaUsecase extends Usecase<
     super(CreateSchemaUsecase.name);
   }
   protected async onExecute(props: CreateSchemaUsecaseInput) {
-    const insertOneResult = await tryOrElse(
-      (error: Error) => {
-        return new DBInsertError(
-          'Error inserting a new Schema on database',
-          error.stack,
-        );
-      },
-      () =>
-        this.schemaCollection.insertOne({
-          schemaName: props.name,
-          fields: props.fields,
-        }),
+    const insertOneResult = await fromPromise(
+      this.schemaCollection.insertOne({
+        schemaName: props.name,
+        fields: props.fields,
+      }),
     );
     if (insertOneResult.isErr) {
-      return err(insertOneResult.error);
+      return err(
+        new DBInsertError(
+          'Error inserting a new Schema on database',
+          (insertOneResult.error as Error).stack,
+        ),
+      );
     }
     return ok({ id: insertOneResult.value.insertedId.toString() });
   }

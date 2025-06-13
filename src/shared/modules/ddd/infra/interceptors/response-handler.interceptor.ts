@@ -18,7 +18,7 @@ import { Response } from 'express';
  */
 export interface SuccessResponse<T> {
   data: T;
-  timestamp: string;
+  meta: unknown;
 }
 
 /**
@@ -42,7 +42,6 @@ export class ResultInterceptor<T, E extends BaseException>
     const response = context.switchToHttp().getResponse<Response>();
 
     return next.handle().pipe(
-      // Use switchMap to handle the Promise resolution from the controller
       switchMap(async (resultPromise) => {
         try {
           const result = await resultPromise;
@@ -59,22 +58,17 @@ export class ResultInterceptor<T, E extends BaseException>
           );
         }
       }),
-      // Use map to transform the resolved Result object
       map((result: Result<T, E>) => {
         if (result.isOk) {
-          // If the result is Ok, return a standardized success response.
           return {
             data: result.value,
-            timestamp: new Date().toISOString(),
+            meta: {
+              timestamp: new Date().toISOString(),
+            },
           };
         } else {
-          // If the result is Err, handle the custom BaseException.
           const exception = result.error;
-
-          // Set the HTTP status code on the actual response object.
           response.status(exception.statusCode);
-
-          // Return a standardized error response using properties from BaseException.
           return {
             error: exception.key,
             message: exception.message,
