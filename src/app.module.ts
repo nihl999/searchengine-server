@@ -3,13 +3,14 @@ import { SchemaModule } from './modules/schema/schema.module';
 import { MongoModule } from './shared/modules/mongo/mongo.module';
 import { HealthModule } from './shared/modules/health/health.module';
 import { MockAuthMiddleware } from './shared/modules/auth/session.mock';
+import { config } from 'env.config';
 
 @Module({
   imports: [
     MongoModule.forRoot({
       connectionName: 'default',
-      uri: 'mongodb://root:example@localhost:27017/nexus_db?authSource=admin',
-      database: 'default',
+      uri: config.MONGO_URI,
+      database: config.MONGO_DBNAME,
     }),
     SchemaModule,
     HealthModule,
